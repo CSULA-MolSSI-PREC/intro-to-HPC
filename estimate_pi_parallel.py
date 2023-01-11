@@ -72,5 +72,5 @@ if __name__ == "__main__":
         pi_est_std  = np.std(pi_ests)
 
         # Print the final approximation
-        print(f"pi_est_mean = {pi_est_mean :2.10f}, pi_est_std = {pi_est_std :2.10f}, "\
+        print(f"pi_est_mean = {pi_est_mean :2.10f}, pi_est_std = {pi_est_std :2.10f}, runs = {n_ests:d}, "\
               f"samples = {n_samples :d}, processors: {size} ranks, elapsed time: {elapsed_time:.6f} seconds")
