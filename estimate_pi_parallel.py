@@ -30,8 +30,14 @@ if __name__ == "__main__":
     rank = comm.Get_rank()
     size = comm.Get_size()
 
+    # set the number of runs
+    n_ests = 20
+
+    # array for values of pi in each run
+    pi_ests = []
+
     # Set the number of points to generate per process
-    n_samples = 100000000
+    n_samples = 10000000
     count = int(np.floor(n_samples/size))
     remainder = n_samples % size
 
@@ -39,14 +45,21 @@ if __name__ == "__main__":
         # Start time of Monte Carlo algorithm
         start_time = time.perf_counter()
 
-    # Calculate the approximate value of pi
-    if rank < remainder:
-        pi_approx = monte_carlo_pi(count + 1)
-    else:
-        pi_approx = monte_carlo_pi(count)
+    # loop over number of runs and add 
+    # pi value to the pi_ests array
+    for i in range(n_ests):
 
-    # Reduce the approximations from all processes to get the final approximation
-    pi_final = comm.reduce(pi_approx, op=MPI.SUM)
+        # Calculate the approximate value of pi
+        if rank < remainder:
+            pi_approx = monte_carlo_pi(count + 1)
+        else:
+            pi_approx = monte_carlo_pi(count)
+
+        # Reduce the approximations from all processes to get the final approximation
+        pi_final = comm.reduce(pi_approx, op=MPI.SUM)
+
+        if rank==0:
+            pi_ests.append(pi_final/size)
 
     if rank == 0:
         # End time of Monte Carlo algorithm
@@ -55,7 +68,9 @@ if __name__ == "__main__":
         # Elapsed time of Monte Carlo algorithm
         elapsed_time = end_time - start_time
 
+        pi_est_mean = np.mean(pi_ests)
+        pi_est_std  = np.std(pi_ests)
+
         # Print the final approximation
-        print(f"Final approximation of pi: {pi_final / size:.10f}")
-        print(f"Elapsed time: {elapsed_time:.6f} seconds")
-        print(f"Number of processes: {size} ranks")
+        print(f"pi_est_mean = {pi_est_mean :2.10f}, pi_est_std = {pi_est_std :2.10f}, "\
+              f"samples = {n_samples :d}, processors: {size} ranks, elapsed time: {elapsed_time:.6f} seconds")
